@@ -18,7 +18,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // Register
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(
@@ -27,7 +26,6 @@ public class AuthController {
         return authService.register(req);
     }
 
-    // Login
     @PostMapping("/login")
     public AuthResponse login(
             @Valid @RequestBody LoginRequest req) {
@@ -35,7 +33,6 @@ public class AuthController {
         return authService.login(req);
     }
 
-    // Get current user
     @GetMapping("/me")
     public UserResponse me(Authentication auth) {
 
@@ -44,7 +41,6 @@ public class AuthController {
         );
     }
 
-    // Update current user
     @PutMapping("/me")
     public UserResponse updateMe(
             Authentication auth,

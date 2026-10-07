@@ -29,7 +29,7 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
-    @Value("${bustrack.cors.allowed-origins}")
+    @Value("${bustrack.cors.allowed-origins:*}")
     private String allowedOrigins;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
@@ -38,42 +38,128 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(c -> c.configurationSource(corsConfigurationSource()))
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/", "/api/health", "/error").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                        // administrators manage everything
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/buses/**", "/api/drivers/**", "/api/routes/**",
-                                "/api/schedules/**", "/api/notifications/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/buses/**", "/api/drivers/**", "/api/routes/**",
-                                "/api/schedules/**", "/api/notifications/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/buses/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/buses/**", "/api/drivers/**", "/api/routes/**",
-                                "/api/schedules/**", "/api/notifications/**").hasRole("ADMIN")
-                        // drivers' personal details are not shown to students
-                        .requestMatchers(HttpMethod.GET, "/api/drivers/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .csrf(AbstractHttpConfigurer::disable)
+
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+            .exceptionHandling(exception ->
+                exception.authenticationEntryPoint(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+                )
+            )
+
+            .authorizeHttpRequests(auth -> auth
+
+                // CORS preflight
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // Public endpoints
+                .requestMatchers(
+                    "/",
+                    "/api/health",
+                    "/error"
+                ).permitAll()
+
+                // Authentication
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/auth/login",
+                    "/api/auth/register"
+                ).permitAll()
+
+                // Admin
+                .requestMatchers("/api/admin/**")
+                .hasRole("ADMIN")
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/buses/**",
+                    "/api/drivers/**",
+                    "/api/routes/**",
+                    "/api/schedules/**",
+                    "/api/notifications/**"
+                ).hasRole("ADMIN")
+
+                .requestMatchers(
+                    HttpMethod.PUT,
+                    "/api/buses/**",
+                    "/api/drivers/**",
+                    "/api/routes/**",
+                    "/api/schedules/**",
+                    "/api/notifications/**"
+                ).hasRole("ADMIN")
+
+                .requestMatchers(
+                    HttpMethod.PATCH,
+                    "/api/buses/**"
+                ).hasRole("ADMIN")
+
+                .requestMatchers(
+                    HttpMethod.DELETE,
+                    "/api/buses/**",
+                    "/api/drivers/**",
+                    "/api/routes/**",
+                    "/api/schedules/**",
+                    "/api/notifications/**"
+                ).hasRole("ADMIN")
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/drivers/**"
+                ).hasRole("ADMIN")
+
+                // Everything else requires authentication
+                .anyRequest().authenticated()
+            )
+
+            .addFilterBefore(
+                jwtAuthFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration config = new CorsConfiguration();
-        List<String> origins = Arrays.stream(allowedOrigins.split(",")).map(String::trim)
-                .filter(s -> !s.isEmpty()).toList();
+
+        List<String> origins = Arrays.stream(
+                allowedOrigins.split(",")
+            )
+            .map(String::trim)
+            .filter(origin -> !origin.isEmpty())
+            .toList();
+
         config.setAllowedOriginPatterns(origins);
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        config.setAllowedMethods(List.of(
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS"
+        ));
+
         config.setAllowedHeaders(List.of("*"));
+
+        config.setAllowCredentials(true);
+
         config.setMaxAge(3600L);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 
@@ -83,7 +169,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
-        return cfg.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration)
+            throws Exception {
+
+        return configuration.getAuthenticationManager();
     }
 }
