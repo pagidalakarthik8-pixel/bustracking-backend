@@ -41,11 +41,11 @@
         </dependency>
 
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- In-memory DB for the "dev" profile (no MySQL needed to try the app) -->
+        <!-- In-memory DB for the "dev" profile (no PostgreSQL needed to try the app) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
