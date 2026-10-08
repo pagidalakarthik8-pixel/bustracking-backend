@@ -33,11 +33,8 @@ public class Bus {
     /** Free text shown to students, e.g. "Running 15 minutes late due to traffic". */
     private String statusNote;
 
-    /** Most recent GPS fix reported by the bus tracking device. */
     private Double latitude;
-
     private Double longitude;
-
     private Instant locationUpdatedAt;
 
     @ManyToOne(fetch = FetchType.EAGER)

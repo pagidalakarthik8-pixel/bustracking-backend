@@ -87,7 +87,6 @@ public class BusService {
         return saved;
     }
 
-    /** Stores the latest GPS fix. The bus list is available to every signed-in student. */
     @Transactional
     public Bus updateLocation(Long id, Double latitude, Double longitude) {
         Bus bus = get(id);

@@ -10,6 +10,6 @@ public class HealthController {
 
     @GetMapping({"/", "/api/health"})
     public Map<String, String> health() {
-        return Map.of("service", "Anurag University Bus Tracking API", "status", "UP");
+        return Map.of("service", "BusTrack API", "status", "UP");
     }
 }

@@ -47,7 +47,6 @@ public class BusController {
         return busService.updateStatus(id, req);
     }
 
-    /** GPS-device endpoint. Restricted to administrators until dedicated device credentials are configured. */
     @PatchMapping("/{id}/location")
     public Bus updateLocation(@PathVariable Long id, @Valid @RequestBody BusLocationRequest req) {
         return busService.updateLocation(id, req.latitude(), req.longitude());
